@@ -1,0 +1,18 @@
+Steps of preparing input files for NCAR routing model:
+1. Given a stream outlet location, find its segment ID using arcGIS.
+
+2. Find all upstream segs and HRUs of the outlet, and output arcpy format results
+	Running 'find_all_upstreams.py'
+		Input: change 'parameter' section in the script
+		Output: qry_segID_[outletID].pk; qry_hruID_[outletID].pk
+
+3. Export these segments and HRUs as shapefiles
+	1. Copy 'qry_segID_[outletID].pk' and 'qry_hruID_[outletID].pk' to /nfs/jet/tools/SAMBA/ymao/VIC_RBM_east/GIS/preprocessing/input.
+	2. Run arc python script '/nfs/jet/tools/SAMBA/ymao/VIC_RBM_east/GIS/preprocessing/selecting_seg_hru.txt' (need to change the settings at the beginning of the script).
+		Output: shapefiles '/nfs/jet/tools/SAMBA/ymao/VIC_RBM_east/GIS/preprocessing/output/upstream_segments_[outletID]' and '/nfs/jet/tools/SAMBA/ymao/VIC_RBM_east/GIS/preprocessing/output/upstream_hrus_[outletID]'
+
+4. Manually check the above shapefiles!!!!!!
+	Check if they look correct. They should be a complete watershed upstream of the outlet.
+
+
+

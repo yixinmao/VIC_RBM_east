@@ -1,13 +1,14 @@
 #!/bin/bash
 
-if [ $# -ne 5 ]; then
+if [ $# -ne 6 ]; then
   echo "This script compute weighted averaged time series for hru & add attributes in netCDF"
   echo "Not enough argument supplied" 
-  echo "usage: ./Upscale_nc.sh <script> <nc_wgt> <nc_in> <var> <nc-out> "
+  echo "usage: ./Upscale_nc.sh <script> <nc_wgt> <nc_in> <var> <cell_id> <nc-out> "
   echo "<script>: name of Calc_hru_wgtavg_nc.py script"
   echo "<nc_wgt>: name of weight netCDF"
   echo "<nc_in>:  Name of input gridded netCDF "
   echo "<var>:    Variable name in input netCDF e.g., RUNOFF"
+  echo "<cell_id>:    Cell ID name in input netCDF e.g., RUNOFF"
   echo "<nc_out>: Name of output netCDF containing weighted avg values; direct input to the routing model" 
   exit
 fi
@@ -16,7 +17,8 @@ script=$1
 nc_wgt=$2
 nc_in=$3
 var=$4
-nc_out=$5
+cell_id_name=$5
+nc_out=$6
 
 #=============================================================
 # set paramters
@@ -53,12 +55,13 @@ echo 'Your arguments are like these'
 echo ${nc_wgt}
 echo ${nc_in}
 echo ${var}
+echo ${cell_id_name}
 echo ${nc_out}
 
 #=============================================================
 # Run python script to compute weighted values
 #=============================================================
-python $script ${nc_wgt} ${nc_in} ${var} ${nc_out}
+python $script ${nc_wgt} ${nc_in} ${var} ${cell_id_name} ${nc_out}
 
 #=============================================================
 # Add time and hru_id variables

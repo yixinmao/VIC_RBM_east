@@ -119,7 +119,7 @@ def writeNetCDFData(fn, var, varname):
   
   ncfile.close()
 
-def compAvgVal(nc_wgt,nc_in,varname):
+def compAvgVal(nc_wgt,nc_in,varname, cell_id_name):
   """Compute areal weighted avg value of <varname> in <nc_in> for each hru based on hru's weight in <nc_wgt>""" 
   wgt = wgtnc(nc_wgt) #instantaneous of wgtnc object
   hruIdName = wgt.getHruIdName()
@@ -127,7 +127,7 @@ def compAvgVal(nc_wgt,nc_in,varname):
 
   dataVal  = getNetCDFData(nc_in,varname) # Get data value 
   FillVal  = getNetCDFAtt(nc_in,varname,'_FillValue') # Get data value 
-  IdVal    = getNetCDFData(nc_in,'hru_id')
+  IdVal    = getNetCDFData(nc_in,cell_id_name)
   dim1size = dataVal.shape[0]
   #latVal   = getNetCDFData(nc_in,'lat') 
   #lonVal   = getNetCDFData(nc_in,'lon') 
@@ -237,7 +237,7 @@ def compAvgVal(nc_wgt,nc_in,varname):
 #                Main                      #
 ############################################
 use = '''
-Usage: %s -[h] <weight_netCDF> <input_netCDF> <variable_name_in_input_netCDF> <output_netCDF>
+Usage: %s -[h] <weight_netCDF> <input_netCDF> <variable_name_in_input_netCDF> <cell_id_name_in_input_netCDF> <output_netCDF>
         -h  help
 '''
 if __name__ == '__main__':
@@ -261,15 +261,15 @@ if __name__ == '__main__':
         else:
             raise OptionError, opt
             usage()
-
-    if len(args) == 4:
+    if len(args) == 5:
       # Read three argument
       nc_wgt = args[0]
       nc_in = args[1]  
-      varname = args[2]  
-      nc_out = args[3]
+      varname = args[2]
+      cell_id_name = args[3]  
+      nc_out = args[4]
 
-      wgtVal=compAvgVal(nc_wgt,nc_in,varname)
+      wgtVal=compAvgVal(nc_wgt,nc_in,varname,cell_id_name)
       writeNetCDFData(nc_out, wgtVal, varname)     
     else:
       usage()

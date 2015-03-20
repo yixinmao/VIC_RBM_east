@@ -1,0 +1,45 @@
+#!/bin/bash
+
+
+#=============================================#
+# Set parameters
+#=============================================#
+vic_output_orig_path=/raid2/ymao/VIC_RBM_east/ncar_route/model_run/vic_output_grid/from_2860/data_orig/hb2860_historic_run.199001.nc  # original VIC output file, netCDF format
+vic_output_tot_runoff_path=/raid2/ymao/VIC_RBM_east/ncar_route/model_run/vic_output_grid/from_2860/hb2860_historic_run.TOTRUNOFF.199001.nc
+
+runoff_name_orig=RUNOFF  # surface runoff variable name in the original VIC output file
+baseflow_name_orig=BASEFLOW # baseflow runoff variable name in the original VIC output file
+tot_runoff_name=TOTRUNOFF  # total runoff variable name
+
+#=============================================#
+# Copy runoff and baseflow variables to temp files 
+#=============================================#
+# copy runoff variable to a temp file
+ncks -O -v $runoff_name_orig $vic_output_orig_path ./runoff.temp.nc
+# copy baseflow variable to a temp file
+ncks -O -v $baseflow_name_orig $vic_output_orig_path ./baseflow.temp.nc
+
+#=============================================#
+# Add runoff and baseflow
+#=============================================#
+cdo add ./runoff.temp.nc ./baseflow.temp.nc $vic_output_tot_runoff_path
+ 
+#=============================================#
+# Rename totrunoff variable and change unit to mm/d
+#=============================================#
+# rename total runoff variable to TOTRUNOFF
+ncrename -O -v RUNOFF,TOTRUNOFF $vic_output_tot_runoff_path
+# change units to 'mm/d'
+ncatted -a units,$tot_runoff_name,m,c,"mm/d" $vic_output_tot_runoff_path
+
+#=============================================#
+# Clean up working directory
+#=============================================#
+rm runoff.temp.nc
+rm baseflow.temp.nc
+
+
+
+
+
+

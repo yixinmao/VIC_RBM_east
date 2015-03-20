@@ -3,14 +3,14 @@
 if [ $# -ne 8 ]; then
   echo "This script compute weighted averaged time series for hru & add attributes in netCDF"
   echo "Not enough argument supplied" 
-  echo "usage: ./Upscale_nc.sh <script> <nc_wgt> <nc_in> <var> <lat_name> <lon_name> <cell_id> <nc-out> "
+  echo "usage: ./create_hru_sgtavg_nc.scr <script> <nc_wgt> <nc_in> <var> <lat_name> <lon_name> <cell_id> <nc-out> "
   echo "<script>: name of Calc_hru_wgtavg_nc.py script"
   echo "<nc_wgt>: name of weight netCDF"
   echo "<nc_in>:  Name of input gridded netCDF "
-  echo "<var>:    Variable name in input netCDF e.g., RUNOFF"
+  echo "<var>:    Variable name in input netCDF e.g., TOTRUNOFF"
   echo "<lat_name>:    lat variable name in input netCDF e.g., LAT"
   echo "<lon_name>:    lon variable name in input netCDF e.g., LON"
-  echo "<cell_id>:    Cell ID name in input netCDF e.g., RUNOFF"
+  echo "<cell_id>:    Cell ID name in input netCDF; if no cell ID, put 'None'"
   echo "<nc_out>: Name of output netCDF containing weighted avg values; direct input to the routing model" 
   exit
 fi

@@ -1,0 +1,83 @@
+Steps of preparing input files for NCAR routing model
+
+Note:
+	1. This procedure maps VIC gridded variables to HRUs, and generate input netCDF file for the NCAR routing model. It also finds out the grid cells needed for a certain watershed.
+	2. The input for the whole procedure:
+		Topology netCDF file (direct input to the NCAR routing model), bigger than the watershed
+		Latlon list of VIC grids, bigger than the watershed
+		Outlet segment ID of the watershed
+	3. !!!!!!!!!!!! Important !!!!!!!!!!!!!!!
+		Step 1 - 7 only needs to be done once for a certain outlet. Once steps 1-7 are done and we already have the weight nc file, skip steps 1-7 and only do step 8 to map gridded data to HRU data.
+
+#====================================================================
+
+1. Given a stream outlet location, find its segment ID using arcGIS.
+
+2. Find all upstream segs and HRUs of the outlet, and output arcpy format results
+	Running 'find_all_upstreams.py'
+		Input: change 'parameter' section in the script
+		Output: qry_segID_[outletID].pk; qry_hruID_[outletID].pk
+
+3. Export these segments and HRUs as shapefiles
+	1. Copy 'qry_segID_[outletID].pk' and 'qry_hruID_[outletID].pk' to /nfs/jet/tools/SAMBA/ymao/VIC_RBM_east/GIS/preprocessing/input.
+	2. Run arc python script '/nfs/jet/tools/SAMBA/ymao/VIC_RBM_east/GIS/preprocessing/selecting_seg_hru.txt' (need to change the settings at the beginning of the script).
+		Output: shapefiles '/nfs/jet/tools/SAMBA/ymao/VIC_RBM_east/GIS/preprocessing/output/upstream_segments_[outletID]' and '/nfs/jet/tools/SAMBA/ymao/VIC_RBM_east/GIS/preprocessing/output/upstream_hrus_[outletID]'
+	3. Copy the segments and HRUs shapefiles back to hydra (be sure to copy all related files), e.g., to ./output/
+
+4. Manually check the above shapefiles!!!!!!
+	Check if they look correct. They should be a complete watershed upstream of the outlet.
+
+5. Make a raster file for VIC grids needed
+	#========== If already has a point shapefile of the original big lat lon grid, skip steps 1-3. ========#
+	1. Make a xyz file of lat lon
+		3 columns: <lat> <lon> <one>  (the last column is all 1)
+		The file should have the header line: "lat lon one"
+		The file name must has extension .txt
+		e.g., Livneh_latlon_list_conus_xyz.txt
+	2. Copy this file to '/nfs/jet/tools/SAMBA/ymao/VIC_RBM_east/GIS/preprocessing/input'
+	3. Make a point shapefile of the lat lon grid, put in '/nfs/jet/tools/SAMBA/ymao/VIC_RBM_east/GIS/preprocessing/input'
+	4. Run arc python script '/nfs/jet/tools/SAMBA/ymao/VIC_RBM_east/GIS/preprocessing/make_vic_raster.txt' (need to change the settings at the beginning of the script)
+		Input: the big latlon point shapefile and HRU shapefile of the complete watershed
+		Output:
+			Raster file of the latlon grid containing the whole watershed: '/nfs/jet/tools/SAMBA/ymao/VIC_RBM_east/GIS/preprocessing/output/ras_[outletID]'
+			A list of latlon needed to be run by VIC: '/nfs/jet/tools/SAMBA/ymao/VIC_RBM_east/GIS/preprocessing/output/latlon_[outletID]'  (only the 3rd and 4th columns are useful)
+
+6. Manually chec the above raster file!!!!!!
+	Check if it contains the whole HRU watershed.
+
+7. Calculate weights
+	1. Copy the raster file ('/nfs/jet/tools/SAMBA/ymao/VIC_RBM_east/GIS/preprocessing/output/ras_[outletID]') to hydra (need to copy all files consisting the raster file). e.g., to ./output/ras_[outletID]
+	2. Run script: grid2shp.py
+		This convert the latlon raster to polygon shapefile
+		Usage: python grid2shp.py <path to raster> <path to output shapefile>
+		Example: python ./scripts/grid2shp.py ./input/ras_[outletID]/ras_[outletID] ./output/latlon_grid_[outletID].shp
+	3. Run script: poly2poly.py
+		This calculates weights of overlaping gridcells for each HRUs
+		Usage: python poly2poly.py <HRU shapefile> <name of hru id filed> <grid cell shapefile> <grid cell id field (id)> GRID <output weights nc file>
+		Example: python ./scripts/poly2poly.py ./output/upstream_hrus_[outletID].shp hru_id2 ./output/latlon_grid_[outletID].shp id GRID ./output/hru_weights_[outletID].nc
+
+#==================================================================================
+
+8.1 Running VIC for the needed grid cells
+	Run VIC for the lat and lon listed in: '/nfs/jet/tools/SAMBA/ymao/VIC_RBM_east/GIS/preprocessing/output/latlon_[outletID]' (only the 3rd and 4th columns are useful)
+
+8.2 Convert VIC output to netCDF format (haven't done yet!!!!!!!!!)
+
+8.3 Mapping VIC output to HRUs
+	1. Run script: create_hru_sgtavg_nc.scr
+		This script takes in weights nc file and gridded VIC variable nc file, and use script 'Calc_hru_wgtavg_nc.py', to map VIC varialbe to HRUs. It outputs a nc file that can be directly used as input to the NCAR routing model.
+		Usage: ./create_hru_sgtavg_nc.scr <script> <nc_wgt> <nc_in> <var> <lat_name> <lon_name> <cell_id> <nc-out>
+				<script>: name of Calc_hru_wgtavg_nc.py script
+				<nc_wgt>: name of weight netCDF
+				<nc_in>:  Name of input gridded netCDF
+				<var>:    Variable name in input netCDF e.g., TOTRUNOFF
+				<lat_name>:    lat variable name in input netCDF e.g., LAT
+				<lon_name>:    lon variable name in input netCDF e.g., LON
+				<cell_id>:    Cell ID name in input netCDF; if no cell ID, put 'None'
+				<nc_out>: Name of output netCDF containing weighted avg values; direct input to the routing model
+			(need to change the 'set parameters' section at the beginning of the script)
+		Example: ./scripts/create_hru_sgtavg_nc.scr ./scripts/Calc_hru_wgtavg_nc.py ./output/hru_weights_17000585.nc /home/raid2/ymao/VIC_RBM_east/ncar_route/model_run/vic_variable_grid/from_2860/hb2860_historic_run.TOTRUNOFF.199001.nc TOTRUNOFF LAT LON None /home/raid2/ymao/VIC_RBM_east/ncar_route/model_run/input/from_2860/hb2860.TOTRUNOFF.hru.199001.nc
+
+
+
+

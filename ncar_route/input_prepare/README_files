@@ -1,0 +1,10 @@
+input:
+	Contain:
+		The original big topology netCDF file
+		The original big latlon list files
+
+output:
+	Contain all the preprocessing outputs
+
+(The final output file - netCDF file of VIC output varialbe mapped to HRUs - is not put under the current 'input_prepare' directory)
+

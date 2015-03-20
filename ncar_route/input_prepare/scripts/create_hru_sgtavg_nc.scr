@@ -1,0 +1,97 @@
+#!/bin/bash
+
+if [ $# -ne 8 ]; then
+  echo "This script compute weighted averaged time series for hru & add attributes in netCDF"
+  echo "Not enough argument supplied" 
+  echo "usage: ./Upscale_nc.sh <script> <nc_wgt> <nc_in> <var> <lat_name> <lon_name> <cell_id> <nc-out> "
+  echo "<script>: name of Calc_hru_wgtavg_nc.py script"
+  echo "<nc_wgt>: name of weight netCDF"
+  echo "<nc_in>:  Name of input gridded netCDF "
+  echo "<var>:    Variable name in input netCDF e.g., RUNOFF"
+  echo "<lat_name>:    lat variable name in input netCDF e.g., LAT"
+  echo "<lon_name>:    lon variable name in input netCDF e.g., LON"
+  echo "<cell_id>:    Cell ID name in input netCDF e.g., RUNOFF"
+  echo "<nc_out>: Name of output netCDF containing weighted avg values; direct input to the routing model" 
+  exit
+fi
+
+script=$1
+nc_wgt=$2
+nc_in=$3
+var=$4
+lat_name=$5
+lon_name=$6
+cell_id_name=$7
+nc_out=$8
+
+#=============================================================
+# set paramters
+#=============================================================
+nc_in_time_var_name=TIME  # variable name of time variable in nc_in
+nc_in_time_dim_name=TIME  # dimension name of time dimension in nc_in
+nc_wgt_hru_id_var_name=polyid  # variable name of hru id variable in nc_wgt
+nc_wgt_hru_id_dim_name=polyid  # dimension name of hru id dimension in nc_wgt
+
+#=============================================================
+# create temporal netCDF
+#=============================================================
+nc_time=${var}_time_temp.nc
+nc_hru=${var}_hru_temp.nc
+
+# copy time variable from nc_in to temp file, and rename variable and dimension both to time
+ncks -O -v $nc_in_time_var_name ${nc_in} ${nc_time}
+if [ $nc_in_time_var_name != time ]; then
+	ncrename -O -v $nc_in_time_var_name,time ${nc_time}
+fi
+if [ $nc_in_time_dim_name != time ]; then
+	ncrename -O -d $nc_in_time_dim_name,time ${nc_time}
+fi
+# copy hru variable from nc_wgt to temp file, and rename variable and dimension both to hru_id
+ncks -O -v $nc_wgt_hru_id_var_name ${nc_wgt} ${nc_hru}
+if [ $nc_wgt_hru_id_var_name != hru_id ]; then
+	ncrename -O -v $nc_wgt_hru_id_var_name,hru_id ${nc_hru}
+fi
+if [ $nc_wgt_hru_id_dim_name != hru_id ]; then
+	ncrename -O -d $nc_wgt_hru_id_dim_name,hru_id ${nc_hru}
+fi
+
+echo 'Your arguments are like these'
+echo ${nc_wgt}
+echo ${nc_in}
+echo ${var}
+echo ${cell_id_name}
+echo ${nc_out}
+
+#=============================================================
+# Run python script to compute weighted values
+#=============================================================
+python $script ${nc_wgt} ${nc_in} ${var} ${lat_name} ${lon_name} ${cell_id_name} ${nc_out}
+
+#=============================================================
+# Add time and hru_id variables
+#=============================================================
+# rename dimensions
+ncrename -O -d dim1,time ${nc_out} 
+ncrename -O -d dim2,hru_id ${nc_out}
+# copy time varialbe into output nc file
+ncks -A ${nc_time} ${nc_out}
+# copy hru_id varialbe into output nc file
+ncks -A ${nc_hru} ${nc_out} 
+
+#=============================================================
+# Add attributes to variable (e.g., RUNOFF)
+#=============================================================
+# Add units
+var_units=`echo "from netCDF4 import Dataset; nc=Dataset('$nc_in', 'r'); var_units=nc.variables['$var'].units; print var_units" | python`  # read variable units from nc_in file
+ncatted -O -a units,${var},c,c,"$var_units" ${nc_out}  # add units to variable
+# Add FillValue
+ncatted -O -a _FillValue,${var},c,f,-9999.0 ${nc_out}
+# Change time dimension to unlimitted
+ncks -O --mk_rec_dmn time ${nc_out} ${nc_out}
+
+#=============================================================
+# Clean up and finish
+#=============================================================
+rm -f ${nc_time} ${nc_hru} 
+
+echo "Finished" 

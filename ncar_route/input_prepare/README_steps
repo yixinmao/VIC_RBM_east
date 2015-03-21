@@ -4,6 +4,7 @@ Note:
 	1. This procedure maps VIC gridded variables to HRUs, and generate input netCDF file for the NCAR routing model. It also finds out the grid cells needed for a certain watershed.
 	2. The input for the whole procedure:
 		Topology netCDF file (direct input to the NCAR routing model), bigger than the watershed
+		Shapefiles of river and HRU network
 		Latlon list of VIC grids, bigger than the watershed
 		Outlet segment ID of the watershed
 	3. !!!!!!!!!!!! Important !!!!!!!!!!!!!!!

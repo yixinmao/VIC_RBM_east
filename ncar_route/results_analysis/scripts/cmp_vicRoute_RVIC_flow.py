@@ -22,7 +22,7 @@ usgs_flow_path = '/raid2/ymao/VIC_RBM_east/ncar_route/results_analysis/data/USGS
 
 output_plot_basename = '/raid2/ymao/VIC_RBM_east/ncar_route/results_analysis/output_plots/cmp_vicRoute_RVIC_Yakima_Mabtom_1991_1995'  # output plot path basename (suffix will be added to different plots)
 
-plot_start_date = dt.date(1990, 10, 1)  # start date shown on the plot
+plot_start_date = dt.date(1990, 10, 1)  # start date shown on the plot (should be complete water years)
 plot_end_date = dt.date(1995, 9, 30)  # end date shown on the plot
 
 time_locator = ('year', 1)  # time locator on the plot; 'year' for year; 'month' for month. e.g., ('month', 3) for plot one tick every 3 months
@@ -108,8 +108,35 @@ plt.title('Yakima Mabtom', fontsize=16)
 my_functions.plot_date_format(ax, time_range=(plot_start_date, plot_end_date))
 my_functions.plot_date_format(ax, time_range=(plot_start_date, plot_end_date), locator=time_locator, time_format='%Y/%m')
 
-
 fig.savefig('%s_diff.png' %output_plot_basename, format='png')
+
+
+#=== plot cumulative flow in each year ===#
+fig = plt.figure(figsize=(12,6))
+ax = plt.axes()
+# plot cumulative for RVIC flow
+tt, rvic_flow_cumsum_to_plot = my_functions.calc_annual_cumsum_water_year(rvic_time_to_plot, rvic_flow_to_plot)
+ax.plot_date(rvic_time_to_plot, rvic_flow_cumsum_to_plot, 'b-', label='RVIC')
+# plot cumulative for original vic flow
+tt, vic_flow_cumsum_to_plot = my_functions.calc_annual_cumsum_water_year(vic_date_to_plot, vic_flow_to_plot)
+ax.plot_date(vic_date_to_plot, vic_flow_cumsum_to_plot, 'r--', label='Orig. VIC route')
+# plot cumulative for observed
+tt, obs_flow_cumsum_to_plot = my_functions.calc_annual_cumsum_water_year(obs_time_to_plot, obs_flow_to_plot)
+ax.plot_date(obs_time_to_plot, obs_flow_cumsum_to_plot, 'k-', label='Observed')
+# add legend, label and title
+plt.legend()
+plt.ylabel('Cumulative flow (cms)', fontsize=16)
+plt.title('Yakima Mabtom', fontsize=16)
+# formatting
+my_functions.plot_date_format(ax, time_range=(plot_start_date, plot_end_date))
+my_functions.plot_date_format(ax, time_range=(plot_start_date, plot_end_date), locator=time_locator, time_format='%Y/%m')
+
+fig.savefig('%s_cumsum.png' %output_plot_basename, format='png')
+
+
+
+
+
 
 
 

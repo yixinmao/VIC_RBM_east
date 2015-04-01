@@ -156,7 +156,7 @@ def read_USGS_streamflow(file):
 #==============================================================
 
 def calc_annual_cumsum_water_year(time, data):
-	'''This script calculates cumulative sum of data in each water year
+	'''This function calculates cumulative sum of data in each water year
 
 	Input:
 		time: corresponding datetime objects
@@ -193,7 +193,7 @@ def calc_annual_cumsum_water_year(time, data):
 #==============================================================
 
 def convert_time_series_to_df(time, data, columns):
-	'''This script converts datetime objects and data array to pandas dataframe object
+	'''This function converts datetime objects and data array to pandas dataframe object
 
 	Input:
 		time: a list of datetime objects, e.g. [dt.datetime(2011,1,1), dt.datetime(2011,1,3)]
@@ -211,7 +211,7 @@ def convert_time_series_to_df(time, data, columns):
 #==============================================================
 
 def calc_monthly_data(df):
-	'''This script calculates monthly mean values
+	'''This function calculates monthly mean values
 
 	Input: a pd.DataFrame object, with index of time
 	Return: a pd.DataFrame object, with monthly mean values (the same units as input data)
@@ -221,11 +221,50 @@ def calc_monthly_data(df):
 	df_mon = df.resample("M", how='mean')
 	return df_mon
 
+#==============================================================
+#==============================================================
 
+def calc_ts_stats_by_group(df, by, stat):
+	'''This function calculates statistics of time series data grouped by year, month, etc
 
+	Input:
+		df: a pd.DataFrame object, with index of time
+		by: string of group by, (select from 'year' or 'month')
+		stat: statistics to be calculated, (select from 'mean')
+		(e.g., if want to calculate monthly mean seasonality (12 values), by='month' and stat='mean')
 
+	Return:
+		A dateframe object, with group as index (e.g. 1-12 for 'month')
+	'''
 
+	import pandas as pd
 
+	if by=='year':
+		if stat=='mean':
+			df_result = df.groupby(lambda x:x.year).mean()
+	elif by=='month':
+		if stat=='mean':
+			df_result = df.groupby(lambda x:x.month).mean()
+
+	return df_result
+
+#==============================================================
+#==============================================================
+
+def plot_format(ax, xtick_location=None, xtick_labels=None):
+	'''This function formats plots by plt.plot
+
+	Input:
+		xtick_location: e.g. [1, 2, 3]
+		xtick_labels: e.g. ['one', 'two', 'three']
+	'''
+
+	import matplotlib.pyplot as plt
+
+	ax.set_xticks(xtick_location)
+	ax.set_xticklabels(xtick_labels)
+
+	return ax
 
 
 

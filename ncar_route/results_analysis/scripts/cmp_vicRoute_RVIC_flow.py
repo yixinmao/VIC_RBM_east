@@ -162,6 +162,29 @@ my_functions.plot_date_format(ax, time_range=(plot_start_date, plot_end_date), l
 
 fig.savefig('%s_monthly.png' %output_plot_basename, format='png')
 
+#===============================================#
+# Plot seasonal cycle
+#===============================================#
+fig = plt.figure(figsize=(12,6))
+ax = plt.axes()
+# calculate and plot monthly mean seasonality flow for RVIC
+df_rvic_seas_to_plot = my_functions.calc_ts_stats_by_group(df_rvic_to_plot, 'month', 'mean') # calculate monthly mean seasonality flow
+ax.plot(df_rvic_seas_to_plot.index, df_rvic_seas_to_plot.flow, 'b-', label='RVIC')
+# calculate and plot monthly mean seasonality flow for orig. VIC route
+df_vic_seas_to_plot = my_functions.calc_ts_stats_by_group(df_vic_to_plot, 'month', 'mean')
+ax.plot(df_vic_seas_to_plot.index, df_vic_seas_to_plot.flow, 'r--', label='Orig. VIC route')
+# calculate and plot monthly mean seasonality flow for orig. VIC route
+df_obs_seas_to_plot = my_functions.calc_ts_stats_by_group(df_obs_to_plot, 'month', 'mean')
+ax.plot(df_obs_seas_to_plot.index, df_obs_seas_to_plot.flow, 'k-', label='Observed')
+# add legend, label and title
+plt.legend()
+plt.ylabel('Flow (cms)', fontsize=16)
+plt.title('Monthly mean seasonality, Yakima Mabtom, %4d-%4d' %(plot_start_date.year + 1, plot_end_date.year), fontsize=16)
+# formatting
+plt.xlim([1, 12])
+tick_labels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Nov','Oct','Nov','Dec']
+my_functions.plot_format(ax, xtick_location=range(1,13), xtick_labels=tick_labels)
 
+fig.savefig('%s_month_seasonality.png' %output_plot_basename, format='png')
 
 

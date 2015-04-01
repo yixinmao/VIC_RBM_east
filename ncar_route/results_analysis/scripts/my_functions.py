@@ -79,7 +79,7 @@ def convert_YYYYMMDD_to_datetime(year, month, day):
 	n = len(year)
 	date = []
 	for i in range(n):
-		date.append(dt.date(year=np.int(np.round(year[i])), month=np.int(np.round(month[i])), day=np.int(np.round(day[i]))))
+		date.append(dt.datetime(year=np.int(np.round(year[i])), month=np.int(np.round(month[i])), day=np.int(np.round(day[i]))))
 
 	return date
 
@@ -154,6 +154,7 @@ def read_USGS_streamflow(file):
 
 #==============================================================
 #==============================================================
+
 def calc_annual_cumsum_water_year(time, data):
 	'''This script calculates cumulative sum of data in each water year
 
@@ -187,6 +188,42 @@ def calc_annual_cumsum_water_year(time, data):
 			data_cumsum[i] = data[i]
 
 	return time, data_cumsum
+
+#==============================================================
+#==============================================================
+
+def convert_time_series_to_df(time, data, columns):
+	'''This script converts datetime objects and data array to pandas dataframe object
+
+	Input:
+		time: a list of datetime objects, e.g. [dt.datetime(2011,1,1), dt.datetime(2011,1,3)]
+		data: a 1-D or 2D array of corresponding data; if 2-D, should have the same number of rows as 'time' length
+		columns: a list of column names, the same length as the number of columns of 'data', e.g. ['A', 'B', 'C']
+
+	Return: a dataframe object
+	'''
+
+	import pandas as pd
+	df = pd.DataFrame(data, index=time, columns=columns)
+	return df
+
+#==============================================================
+#==============================================================
+
+def calc_monthly_data(df):
+	'''This script calculates monthly mean values
+
+	Input: a pd.DataFrame object, with index of time
+	Return: a pd.DataFrame object, with monthly mean values (the same units as input data)
+	'''
+
+	import pandas as pd
+	df_mon = df.resample("M", how='mean')
+	return df_mon
+
+
+
+
 
 
 

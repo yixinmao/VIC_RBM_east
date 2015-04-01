@@ -115,6 +115,47 @@ def plot_date_format(ax, time_range=None, locator=None, time_format=None):
 
 	return ax
 
+#==============================================================
+#==============================================================
+
+def read_USGS_streamflow(file):
+	'''This function reads USGS streamflow from the directly downloaded format (date and data are in the 3rd and 4th columns, respectively; data in cfs)
+
+	Input: directly downloaded streamflow file path
+
+	Return:
+		date_array: a list of datetime object
+		flow_array: an array of flow data [cfs]
+
+	Note: returned data and flow might not be continuous if there is missing data!!!
+
+	'''
+
+	import numpy as np
+	import datetime as dt
+
+	f = open(file, 'r')
+	date_array = []
+	flow_array = []
+	while 1:
+		line = f.readline().rstrip("\n")  # read in one line
+		if line=="":
+			break
+		if line.split()[0]=='USGS' and len(line.split())>=4:  # if data line, and data not missing
+			date_string = line.split()[2]  # read in date string
+			date = dt.datetime.strptime(date_string, "%Y-%m-%d")  # convert date to dt object
+			date_array.append(date)
+
+			flow = float(line.split()[3])  # read in flow and convert to float [cfs]
+			flow_array.append(flow)
+
+	flow_array = np.asarray(flow_array)
+	return date_array, flow_array
+
+
+
+
+
 
 
 

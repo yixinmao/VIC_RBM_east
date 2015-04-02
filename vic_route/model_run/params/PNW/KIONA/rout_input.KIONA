@@ -1,0 +1,27 @@
+# Sample Routing Information File; RCSID: $Id: input.sample,v 1.2 2006/08/26 01:26:56 vicadmin Exp $
+# NAME OF FLOW DIRECTION FILE
+/raid2/ymao/VIC_RBM_east/vic_route/model_run/params/PNW/PNW.fdir
+# NAME OF VELOCITY FILE
+.false.
+1.50
+# NAME OF DIFF FILE
+.false.
+800
+# NAME OF XMASK FILE
+.true.
+/raid2/ymao/VIC_RBM_east/vic_route/model_run/params/PNW/PNW.xmask
+# NAME OF FRACTION FILE
+.true.
+/raid2/ymao/VIC_RBM_east/vic_route/model_run/params/PNW/PNW.frac
+# NAME OF STATION FILE
+./params/PNW/KIONA/KIONA.stnloc
+# PATH OF INPUT FILES AND PRECISION
+./vic_output_from_2860/pnw_1990_1995/fluxes_  # Bug: this path can't take too long path name
+5
+# PATH OF OUTPUT FILES
+/raid2/ymao/VIC_RBM_east/vic_route/model_run/output/Kiona/
+# YEAR AND MONTH OF MODEL OUTPUT TO ROUTE & ROUTED OUTPUT TO WRITE
+1990 01 1995 12
+1990 01 1995 12
+# NAME OF UNIT HYDROGRAPH FILE
+/raid2/ymao/VIC_RBM_east/vic_route/model_run/params/PNW/UH.all

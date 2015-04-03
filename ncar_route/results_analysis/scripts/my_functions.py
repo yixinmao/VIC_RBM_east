@@ -40,6 +40,25 @@ def read_nc(infile, varname, dimension=-1, is_time=0):
 	nc.close()
 	return var
 
+#========================================================================
+#========================================================================
+
+def get_nc_ts(infile, varname, timename):
+	''' This function reads in a time series form a netCDF file
+
+	Require:
+		read_nc
+	'''
+
+	import pandas as pd
+
+	data = read_nc(infile, varname, dimension=-1, is_time=0)
+	time = read_nc(infile, timename, dimension=-1, is_time=1)
+	data = data.squeeze()  # delete single-dimensions (e.g. lat=1, lon=1)
+
+	s = pd.Series(data, index=time)
+	return s
+
 #==============================================================
 #==============================================================
 
@@ -210,43 +229,43 @@ def convert_time_series_to_df(time, data, columns):
 #==============================================================
 #==============================================================
 
-def calc_monthly_data(df):
+def calc_monthly_data(data):
 	'''This function calculates monthly mean values
 
-	Input: a pd.DataFrame object, with index of time
-	Return: a pd.DataFrame object, with monthly mean values (the same units as input data)
+	Input: [DataFrame/Series] with index of time
+	Return: a [DataFrame/Series] object, with monthly mean values (the same units as input data)
 	'''
 
 	import pandas as pd
-	df_mon = df.resample("M", how='mean')
-	return df_mon
+	data_mon = data.resample("M", how='mean')
+	return data_mon
 
 #==============================================================
 #==============================================================
 
-def calc_ts_stats_by_group(df, by, stat):
+def calc_ts_stats_by_group(data, by, stat):
 	'''This function calculates statistics of time series data grouped by year, month, etc
 
 	Input:
-		df: a pd.DataFrame object, with index of time
+		df: a [pd.DataFrame/Series] object, with index of time
 		by: string of group by, (select from 'year' or 'month')
 		stat: statistics to be calculated, (select from 'mean')
 		(e.g., if want to calculate monthly mean seasonality (12 values), by='month' and stat='mean')
 
 	Return:
-		A dateframe object, with group as index (e.g. 1-12 for 'month')
+		A [dateframe/Series] object, with group as index (e.g. 1-12 for 'month')
 	'''
 
 	import pandas as pd
 
 	if by=='year':
 		if stat=='mean':
-			df_result = df.groupby(lambda x:x.year).mean()
+			data_result = data.groupby(lambda x:x.year).mean()
 	elif by=='month':
 		if stat=='mean':
-			df_result = df.groupby(lambda x:x.month).mean()
+			data_result = data.groupby(lambda x:x.month).mean()
 
-	return df_result
+	return data_result
 
 #==============================================================
 #==============================================================
@@ -291,24 +310,26 @@ def read_NRNI_streamflow(file, gauge_name):
 #==============================================================
 #==============================================================
 
-def select_time_range(df, start_datetime, end_datetime):
+def select_time_range(data, start_datetime, end_datetime):
 	''' This function selects out the part of data within a time range 
 
 	Input:
-		df: [dataframe] data with index of datetime
+		data: [dataframe/Series] data with index of datetime
 		start_datetime: [dt.datetime] start time
 		end_datetime: [dt.datetime] end time (NOTE: end_datetime itself is not included in the output; thus, end_datetime should be set a little bit later than the desired last time point)
 
+	Return:
+		Selected data (same object type as input)
 	'''
 
 	import datetime as dt
 
-	start = df.index.searchsorted(start_datetime)
-	end = df.index.searchsorted(end_datetime)
+	start = data.index.searchsorted(start_datetime)
+	end = data.index.searchsorted(end_datetime)
 
-	df_selected = df.ix[start:end]
+	data_selected = data.ix[start:end]
 
-	return df_selected
+	return data_selected
 
 
 

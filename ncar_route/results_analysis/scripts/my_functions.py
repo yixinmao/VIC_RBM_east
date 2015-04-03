@@ -266,5 +266,56 @@ def plot_format(ax, xtick_location=None, xtick_labels=None):
 
 	return ax
 
+#==============================================================
+#==============================================================
+
+def read_NRNI_streamflow(file, gauge_name):
+	'''This function reads in NRNI csv file
+
+	Input:
+		file: [string] original NRNI csv file path (second col: date; first row: gauge_name)
+		gauge_name: [string] gauge name matching the first row of the file
+
+	Output:
+		[dataframe] flow [cfs] data at this gauge with index of dates
+	'''
+
+	import pandas as pd
+
+	df = pd.read_csv(file, skiprows=range(1,7), usecols=(1,gauge_name), index_col=0) #, parse_dates=True, date_parser=lambda x:dt.datetime.strptime(x, '%d%b%Y'))
+	df.index = pd.to_datetime(df.index, format='%d%b%Y')  # make index datetime objects
+	df.columns = ['flow']  # change column name to 'flow'
+
+	return df
+
+#==============================================================
+#==============================================================
+
+def select_time_range(df, start_datetime, end_datetime):
+	''' This function selects out the part of data within a time range 
+
+	Input:
+		df: [dataframe] data with index of datetime
+		start_datetime: [dt.datetime] start time
+		end_datetime: [dt.datetime] end time (NOTE: end_datetime itself is not included in the output; thus, end_datetime should be set a little bit later than the desired last time point)
+
+	'''
+
+	import datetime as dt
+
+	start = df.index.searchsorted(start_datetime)
+	end = df.index.searchsorted(end_datetime)
+
+	df_selected = df.ix[start:end]
+
+	return df_selected
+
+
+
+
+
+
+
+
 
 

@@ -18,7 +18,7 @@ import my_functions
 vic_orig_route_output_path = '/raid2/ymao/VIC_RBM_east/vic_route/model_run/output/Yakima_Kiona/KIONA.day'  # path of original VIC routing output file; [year] [month] [day] [routed flow (cfs)]
 vic_route_header_line = 0  # number of header line in the file
 
-rvic_output_path = '/raid2/ymao/VIC_RBM_east/RVIC/model_run/output/Yakima_Kiona/hist/yakima_kiona_v1.rvic.h0a.1996-01-01.nc'  # path of RVIC routing output file (array type of output; streamflow unit: m3/s)
+rvic_output_path = '/raid2/ymao/VIC_RBM_east/RVIC/model_run/output/Yakima_Kiona_test/hist/yakima_kiona_v1.rvic.h0a.1996-01-01.nc'  # path of RVIC routing output file (array type of output; streamflow unit: m3/s)
 
 #usgs_flow_path = '/raid2/ymao/VIC_RBM_east/ncar_route/results_analysis/data/USGS_streamflow/12508990'  # directly downloaded USGS streamflow data at the corresponding gauge
 
@@ -31,13 +31,13 @@ vic_runoff_sum_nc_timeVar = 'TIME'  # time variable name
 
 #-------------------------------------------------
 
-output_plot_basename = '/raid2/ymao/VIC_RBM_east/ncar_route/results_analysis/output_plots/cmp_vicRoute_RVIC_Yakima_Kiona_1991_1995'  # output plot path basename (suffix will be added to different plots)
+output_plot_basename = '/raid2/ymao/VIC_RBM_east/ncar_route/results_analysis/output_plots/cmp_vicRoute_RVIC_Yakima_Kiona_fixed_bug_1991_1994'  # output plot path basename (suffix will be added to different plots)
 basin_name = 'Yakima Kiona'  # Name shown on the plots
 
 #-------------------------------------------------
 
 plot_start_date = dt.datetime(1990, 10, 1)  # start date shown on the plot (should be complete water years)
-plot_end_date = dt.datetime(1995, 9, 30)  # end date shown on the plot
+plot_end_date = dt.datetime(1994, 9, 30)  # end date shown on the plot
 
 time_locator = ('year', 1)  # time locator on the plot; 'year' for year; 'month' for month. e.g., ('month', 3) for plot one tick every 3 months
 
@@ -60,7 +60,7 @@ VIC_flow = VIC_flow * np.power(12*25.4/1000, 3)  # convert unit to: m3/s
 # Load RVIC routing data, and processing
 #===============================================#
 # Load useful variables in nc output file from the RVIC routing model
-time_rvic = my_functions.read_nc(rvic_output_path, 'time', is_time=1)
+time_rvic = my_functions.read_nc(rvic_output_path, 'time', dimension=slice(0,-1), is_time=1)  # do not read the last time step
 flow_rvic = my_functions.read_nc(rvic_output_path, 'streamflow')  # m3/s
 flow_rvic = flow_rvic[:,0]
 

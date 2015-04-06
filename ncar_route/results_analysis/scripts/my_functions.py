@@ -45,9 +45,18 @@ def read_nc(infile, varname, dimension=-1, is_time=0):
 
 def get_nc_ts(infile, varname, timename):
 	''' This function reads in a time series form a netCDF file
+		(only suitable if the variable only has time dimension, or its other dimensions (e.g. lat and lon) are 1)
 
 	Require:
 		read_nc
+
+	Input:
+		infile: nc file path [string]
+		varname: data variable name in the nc file [string]
+		timename: time variable name in the nc file [string]
+
+	Return:
+		s: [pd.Series] object with index of time
 	'''
 
 	import pandas as pd
@@ -58,6 +67,31 @@ def get_nc_ts(infile, varname, timename):
 
 	s = pd.Series(data, index=time)
 	return s
+
+#==============================================================
+#==============================================================
+
+def get_nc_spatial_data(infile, varname, lonname, latname, dimension=-1):
+	'''This functions reads spatial data from nc file
+
+	Require:
+		read_nc
+
+	Input:
+		infile: nc file path [string]
+		varname: data variable name in the nc file [string]
+		lonname, latname: lat/lon variable name in the nc file [string]
+		dimension: if < 0, read in all dimensions of the variable; if >= 0, only read in the [dimension]th of the variable (index starts from 0). For example, if the first dimension of the variable is time, and if dimension=2, then only reads in the 3rd time step.
+
+	Return:
+		lons, lats: the same dimension as in the nc file
+		data: if dimension=-1, the same dimension as in nc file
+	'''
+
+	data = read_nc(infile, varname, dimension=dimension, is_time=0)
+	lons = read_nc(infile, lonname, dimension=-1, is_time=0)
+	lats = read_nc(infile, latname, dimension=-1, is_time=0)
+	return lons, lats, data
 
 #==============================================================
 #==============================================================
@@ -331,6 +365,25 @@ def select_time_range(data, start_datetime, end_datetime):
 
 	return data_selected
 
+#========================================================================
+#========================================================================
+
+def define_map_projection(projection='gall', llcrnrlat=-80, urcrnrlat=80, llcrnrlon=-180, urcrnrlon=180, resolution='i', land_color='grey', ocean_color='lightblue', lakes=True):
+	'''Define projected map
+
+	Return: the projection
+	'''
+
+	from mpl_toolkits.basemap import Basemap
+	import matplotlib.pyplot as plt
+
+	m = Basemap(projection=projection, llcrnrlat=llcrnrlat, urcrnrlat=urcrnrlat, llcrnrlon=llcrnrlon, urcrnrlon=urcrnrlon, resolution=resolution)
+	m.drawlsmask(land_color=land_color, ocean_color=ocean_color, lakes=lakes)
+	m.drawcoastlines(linewidth=0.75)
+	m.drawstates(linewidth=0.5)
+	m.drawcountries(linewidth=0.5)
+
+	return m
 
 
 

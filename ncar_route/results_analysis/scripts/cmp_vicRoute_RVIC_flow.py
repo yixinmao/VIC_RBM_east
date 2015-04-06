@@ -97,7 +97,7 @@ vic_start_ind = (plot_start_date.date()-date_vic[0].date()).days # ind starts fr
 vic_end_ind = (plot_end_date.date()-date_vic[0].date()).days
 vic_date_to_plot = date_vic[vic_start_ind:vic_end_ind+1]
 vic_flow_to_plot = VIC_flow[vic_start_ind:vic_end_ind+1]
-ax.plot_date(vic_date_to_plot, vic_flow_to_plot, 'r-', label='Orig. VIC route')
+ax.plot_date(vic_date_to_plot, vic_flow_to_plot, 'r--', label='Orig. VIC route')
 # plot time series for NRNI flow (first, select out data to be plotted; then, plot)
 df_NRNI_to_plot = my_functions.select_time_range(df_NRNI, plot_start_date, plot_end_date+dt.timedelta(days=1))
 ax.plot_date(df_NRNI_to_plot.index, df_NRNI_to_plot.flow, 'k-', label='NRNI')
@@ -154,7 +154,7 @@ tt, rvic_flow_cumsum_to_plot = my_functions.calc_annual_cumsum_water_year(rvic_t
 ax.plot_date(rvic_time_to_plot, rvic_flow_cumsum_to_plot, 'b-', label='RVIC')
 # plot cumulative for original vic flow
 tt, vic_flow_cumsum_to_plot = my_functions.calc_annual_cumsum_water_year(vic_date_to_plot, vic_flow_to_plot)
-ax.plot_date(vic_date_to_plot, vic_flow_cumsum_to_plot, 'r-', label='Orig. VIC route')
+ax.plot_date(vic_date_to_plot, vic_flow_cumsum_to_plot, 'r--', label='Orig. VIC route')
 # plot cumulative for NRNI flow
 tt, NRNI_flow_cumsum_to_plot = my_functions.calc_annual_cumsum_water_year(df_NRNI.index, df_NRNI.flow)
 ax.plot_date(df_NRNI.index, NRNI_flow_cumsum_to_plot, 'k-', label='NRNI')
@@ -186,7 +186,7 @@ ax.plot_date(df_rvic_mon_to_plot.index, df_rvic_mon_to_plot.flow, 'b-', label='R
 # calculate and plot monthly mean flow for orig. VIC route
 df_vic_to_plot = my_functions.convert_time_series_to_df(vic_date_to_plot, vic_flow_to_plot, ['flow']) 
 df_vic_mon_to_plot = my_functions.calc_monthly_data(df_vic_to_plot)
-ax.plot_date(df_vic_mon_to_plot.index, df_vic_mon_to_plot.flow, 'r-', label='Orig. VIC route')
+ax.plot_date(df_vic_mon_to_plot.index, df_vic_mon_to_plot.flow, 'r--', label='Orig. VIC route')
 # calculate and plot monthly mean flow for NRNI
 df_NRNI_mon_to_plot = my_functions.calc_monthly_data(df_NRNI_to_plot)
 ax.plot_date(df_NRNI_mon_to_plot.index, df_NRNI_mon_to_plot.flow, 'k-', label='NRNI')
@@ -217,7 +217,7 @@ df_rvic_seas_to_plot = my_functions.calc_ts_stats_by_group(df_rvic_to_plot, 'mon
 ax.plot(df_rvic_seas_to_plot.index, df_rvic_seas_to_plot.flow, 'b-', label='RVIC')
 # calculate and plot monthly mean seasonality flow for orig. VIC route
 df_vic_seas_to_plot = my_functions.calc_ts_stats_by_group(df_vic_to_plot, 'month', 'mean')
-ax.plot(df_vic_seas_to_plot.index, df_vic_seas_to_plot.flow, 'r-', label='Orig. VIC route')
+ax.plot(df_vic_seas_to_plot.index, df_vic_seas_to_plot.flow, 'r--', label='Orig. VIC route')
 # calculate and plot monthly mean seasonality flow for NRNI
 df_NRNI_seas_to_plot = my_functions.calc_ts_stats_by_group(df_NRNI_to_plot, 'month', 'mean')
 ax.plot(df_NRNI_seas_to_plot.index, df_NRNI_seas_to_plot.flow, 'k-', label='NRNI')

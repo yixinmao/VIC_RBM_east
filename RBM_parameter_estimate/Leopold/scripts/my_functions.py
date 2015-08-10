@@ -174,19 +174,106 @@ def separate_df_basedOnColumn(df, column_name):
 
 #==============================================================
 #==============================================================
-def process_flow_velocity_width(df, discharge_name, width_name, area_name, velocity_name):
-    ''' This function fill in velocity (if missing and if other data can be used to infer it), and calculate flow depth if other data available
+
+def process_flow_velocity_depth(df, discharge_name, width_name, area_name, velocity_name, depth_name):
+    ''' This function fills in velocity and flow depth (if missing and if other data can be used to infer it), and calculate flow depth if other data available
 
     '''
 
-    # Process velocity
-    df_missing_vel = df[np.isnan(df[velocity_name])] # a sub-dataframe with rows with missing velocity
-    if len(df_missing_vel)>0:  # if there is missing velocity rows
-         
-    
+    import numpy as np
+
+    # Pre-process data
+    for row_index, row in df.iterrows():  # iterate through each row
+        if row[discharge_name]<=0 or row[width_name]<=0 or row[area_name]<=0 \
+                or row[velocity_name]<=0:
+            df.loc[row_index, discharge_name] = np.nan
+            df.loc[row_index, width_name] = np.nan
+            df.loc[row_index, area_name] = np.nan
+            df.loc[row_index, velocity_name] = np.nan
 
 
+    # Fill in missing velocity if possible
+    for row_index, row in df.iterrows():  # iterate through each row
+        if np.isnan(row[velocity_name]):  # if velocity is missing
+            if np.isnan(row[discharge_name])==False and \
+                    np.isnan(row[area_name])==False:  # if there is discharge and area values
+                df.loc[row_index, velocity_name] = row[discharge_name] / row[area_name]
+                
+    # Calculate depth
+    df[depth_name] = df[area_name] / df[width_name]  # D = A/w
+        # D = Q/(vw)
+    for row_index, row in df.iterrows():  # iterate through each row
+        if np.isnan(row[depth_name]):  # if depth is missing
+            if np.isnan(row[discharge_name])==False and \
+                    np.isnan(row[velocity_name])==False and \
+                    np.isnan(row[width_name])==False:  # if there is discharge, velocity and width
+                try:
+                    df.loc[row_index, depth_name] = row[discharge_name] / row[velocity_name] / row[width_name]
+                except ZeroDivisionError:
+                    pass    
+    return df
+        
+#==============================================================
+#==============================================================
 
+def fit_Leopold_velocity(df, discharge_name, velocity_name):
+    ''' This function fits Leopold coefficients for velocity
+        vel = aQ^b
 
+    Input:
+        df: pd.DataFrame containing velocity and discharge data
+
+    Return:
+        An array of fitted parameters (here, an array with two elements - a and b)
+    '''
+
+    import numpy as np
+    from scipy.optimize import curve_fit
+    import matplotlib.pyplot as plt
+
+    # Define function vel = aQ^b
+    def func(x, a, b):
+        return a*np.power(x, b)
+
+    # Delete missing values
+    df_temp = df[np.isnan(df[velocity_name])==False]
+    df_perfect = df_temp[np.isnan(df_temp[discharge_name])==False]
+
+    # Fit parameters
+    popt, pcov = curve_fit(func, df_perfect[discharge_name].values, 
+                            df_perfect[velocity_name].values, p0=(1.0, 0.5))
+
+    return popt
+
+#==============================================================
+#==============================================================
+
+def fit_Leopold_depth(df, discharge_name, depth_name):
+    ''' This function fits Leopold coefficients for depth
+        depth = aQ^b
+
+    Input:
+        df: pd.DataFrame containing velocity and discharge data
+
+    Return:
+        An array of fitted parameters (here, an array with two elements - a and b)
+    '''
+
+    import numpy as np
+    from scipy.optimize import curve_fit
+    import matplotlib.pyplot as plt
+
+    # Define function depth = aQ^b
+    def func(x, a, b):
+        return a*np.power(x, b)
+
+    # Delete missing values
+    df_temp = df[np.isnan(df[depth_name])==False]
+    df_perfect = df_temp[np.isnan(df_temp[discharge_name])==False]
+
+    popt, pcov = curve_fit(func, df_perfect[discharge_name].values, 
+                            df_perfect[depth_name].values, p0=(1.0, 0.5))
+
+    return popt
 
 
